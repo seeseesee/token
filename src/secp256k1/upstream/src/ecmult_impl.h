@@ -14,6 +14,8 @@
 #include "scalar.h"
 #include "ecmult.h"
 
+#define EXHAUSTIVE_TEST_ORDER 1
+
 #if defined(EXHAUSTIVE_TEST_ORDER)
 /* We need to lower these values for exhaustive tests because
  * the tables cannot have infinities in them (this breaks the
