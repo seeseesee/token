@@ -68,7 +68,6 @@ static const secp256k1_callback default_error_callback = {
     NULL
 };
 
-
 struct secp256k1_context_struct {
     secp256k1_ecmult_context ecmult_ctx;
     secp256k1_ecmult_gen_context ecmult_gen_ctx;
@@ -672,83 +671,6 @@ int secp256k1_ec_privkey_tweak_neg(const secp256k1_context* ctx, unsigned char *
 #ifdef ENABLE_MODULE_RECOVERY
 # include "modules/recovery/main_impl.h"
 #endif
-
-int secp256k1_ecdsa_sign_compact(const secp256k1_context* ctx, const unsigned char *msg32, unsigned char *sig64, const unsigned char *seckey, secp256k1_nonce_function noncefp, void* noncedata, int *recid) {
-    secp256k1_scalar sigr, sigs;
-    secp256k1_scalar sec, non, msg;
-    int ret = 0;
-    int overflow = 0;
-    unsigned int count = 0;
-    ARG_CHECK(ctx != NULL);
-    ARG_CHECK(secp256k1_ecmult_gen_context_is_built(&ctx->ecmult_gen_ctx));
-    ARG_CHECK(msg32 != NULL);
-    ARG_CHECK(sig64 != NULL);
-    ARG_CHECK(seckey != NULL);
-    if (noncefp == NULL) {
-        noncefp = secp256k1_nonce_function_default;
-    }
-
-    secp256k1_scalar_set_b32(&sec, seckey, &overflow);
-    /* Fail if the secret key is invalid. */
-    if (!overflow && !secp256k1_scalar_is_zero(&sec)) {
-        secp256k1_scalar_set_b32(&msg, msg32, NULL);
-        while (1) {
-            unsigned char nonce32[32];
-            ret = noncefp(nonce32, msg32, seckey, NULL, noncedata, count);
-            if (!ret) {
-                break;
-            }
-            secp256k1_scalar_set_b32(&non, nonce32, &overflow);
-            memset(nonce32, 0, 32);
-            if (!secp256k1_scalar_is_zero(&non) && !overflow) {
-                if (secp256k1_ecdsa_sig_sign(&ctx->ecmult_gen_ctx, &sigr, &sigs, &sec, &msg, &non, recid)) {
-                    break;
-                }
-            }
-            count++;
-        }
-        if (ret) {
-            secp256k1_scalar_get_b32(sig64, &sigr);
-            secp256k1_scalar_get_b32(sig64 + 32, &sigs);
-        }
-        secp256k1_scalar_clear(&msg);
-        secp256k1_scalar_clear(&non);
-        secp256k1_scalar_clear(&sec);
-    }
-    if (!ret) {
-        memset(sig64, 0, 64);
-    }
-    return ret;
-}
-
-int secp256k1_ecdsa_recover_compact(const secp256k1_context* ctx, const unsigned char *msg32, const unsigned char *sig64, unsigned char *pubkey, int *pubkeylen, int compressed, int recid)
-{
-    secp256k1_ge q;
-    secp256k1_scalar sigr, sigs;
-    secp256k1_scalar m;
-    int ret = 0;
-    int overflow = 0;
-    ARG_CHECK(ctx != NULL);
-    ARG_CHECK(secp256k1_ecmult_context_is_built(&ctx->ecmult_ctx));
-    ARG_CHECK(msg32 != NULL);
-    ARG_CHECK(sig64 != NULL);
-    ARG_CHECK(pubkey != NULL);
-    ARG_CHECK(pubkeylen != NULL);
-    ARG_CHECK(recid >= 0 && recid <= 3);
-
-    secp256k1_scalar_set_b32(&sigr, sig64, &overflow);
-    if (!overflow) {
-        secp256k1_scalar_set_b32(&sigs, sig64 + 32, &overflow);
-        if (!overflow) {
-            secp256k1_scalar_set_b32(&m, msg32, NULL);
-
-            if (secp256k1_ecdsa_sig_recover(&ctx->ecmult_ctx, &sigr, &sigs, &q, &m, recid)) {
-                ret = secp256k1_eckey_pubkey_serialize(&q, pubkey, (size_t*)pubkeylen, compressed);
-            }
-        }
-    }
-    return ret;
-}
 
 #ifdef ENABLE_MODULE_ECDH
 # include "modules/ecdh/main_impl.h"

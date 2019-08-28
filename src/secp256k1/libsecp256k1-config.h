@@ -22,11 +22,7 @@
 #define USE_FIELD_10X26 1
 #define USE_SCALAR_8X32 1
 
-//enable asm
-#ifdef __x86_64__
-  #define USE_ASM_X86_64 1
-#endif
-
-#define ENABLE_MODULE_RECOVERY
 #define ENABLE_MODULE_GENERATOR
 #define ENABLE_MODULE_BULLETPROOF
+
+#define USE_ECMULT_STATIC_PRECOMPUTATION 1
