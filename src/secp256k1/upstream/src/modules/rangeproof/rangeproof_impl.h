@@ -105,7 +105,6 @@ SECP256K1_INLINE static int secp256k1_rangeproof_genrand(secp256k1_scalar *sec, 
         }
     }
     secp256k1_rfc6979_hmac_sha256_finalize(&rng);
-    secp256k1_scalar_clear(&acc);
     memset(tmp, 0, 32);
     return ret;
 }
@@ -472,14 +471,7 @@ SECP256K1_INLINE static int secp256k1_rangeproof_rewind_inner(secp256k1_scalar *
         }
     }
     *mlen = offset;
-    memset(prep, 0, 4096);
-    for (i = 0; i < 128; i++) {
-        secp256k1_scalar_clear(&s_orig[i]);
-    }
-    for (i = 0; i < 32; i++) {
-        secp256k1_scalar_clear(&sec[i]);
-    }
-    secp256k1_scalar_clear(&stmp);
+
     return 1;
 }
 

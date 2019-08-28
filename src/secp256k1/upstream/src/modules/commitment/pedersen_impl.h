@@ -29,10 +29,6 @@ SECP256K1_INLINE static void secp256k1_pedersen_ecmult(secp256k1_gej *rj, const 
         secp256k1_ge_set_gej(&bp, &bj);
         secp256k1_gej_add_ge(rj, rj, &bp);
     }
-
-    secp256k1_gej_clear(&bj);
-    secp256k1_ge_clear(&bp);
-    secp256k1_scalar_clear(&vs);
 }
 
 SECP256K1_INLINE static void secp256k1_pedersen_blind_ecmult(secp256k1_gej *rj, const secp256k1_scalar *sec, const secp256k1_scalar *value, const secp256k1_ge* value_gen, const secp256k1_ge* blind_gen) {
@@ -48,9 +44,6 @@ SECP256K1_INLINE static void secp256k1_pedersen_blind_ecmult(secp256k1_gej *rj, 
         secp256k1_ge_set_gej(&bp, &bj);
         secp256k1_gej_add_ge(rj, rj, &bp);
     }
-
-    secp256k1_gej_clear(&bj);
-    secp256k1_ge_clear(&bp);
 }
 
 #endif

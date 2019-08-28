@@ -187,7 +187,6 @@ int secp256k1_ec_pubkey_parse(const secp256k1_context* ctx, secp256k1_pubkey* pu
         return 0;
     }
     secp256k1_pubkey_save(pubkey, &Q);
-    secp256k1_ge_clear(&Q);
     return 1;
 }
 
@@ -428,10 +427,6 @@ int secp256k1_ecdsa_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signature
             }
             count++;
         }
-        memset(nonce32, 0, 32);
-        secp256k1_scalar_clear(&msg);
-        secp256k1_scalar_clear(&non);
-        secp256k1_scalar_clear(&sec);
     }
     if (ret) {
         secp256k1_ecdsa_signature_save(signature, &r, &s);
@@ -449,9 +444,7 @@ int secp256k1_ec_seckey_verify(const secp256k1_context* ctx, const unsigned char
     ARG_CHECK(seckey != NULL);
 
     secp256k1_scalar_set_b32(&sec, seckey, &overflow);
-    ret = !overflow && !secp256k1_scalar_is_zero(&sec);
-    secp256k1_scalar_clear(&sec);
-    return ret;
+    return !overflow && !secp256k1_scalar_is_zero(&sec);
 }
 
 int secp256k1_ec_pubkey_create(const secp256k1_context* ctx, secp256k1_pubkey *pubkey, const unsigned char *seckey) {
@@ -473,7 +466,6 @@ int secp256k1_ec_pubkey_create(const secp256k1_context* ctx, secp256k1_pubkey *p
         secp256k1_ge_set_gej(&p, &pj);
         secp256k1_pubkey_save(pubkey, &p);
     }
-    secp256k1_scalar_clear(&sec);
     return ret;
 }
 
@@ -522,8 +514,6 @@ int secp256k1_ec_privkey_tweak_add(const secp256k1_context* ctx, unsigned char *
         secp256k1_scalar_get_b32(seckey, &sec);
     }
 
-    secp256k1_scalar_clear(&sec);
-    secp256k1_scalar_clear(&term);
     return ret;
 }
 
@@ -568,8 +558,6 @@ int secp256k1_ec_privkey_tweak_mul(const secp256k1_context* ctx, unsigned char *
         secp256k1_scalar_get_b32(seckey, &sec);
     }
 
-    secp256k1_scalar_clear(&sec);
-    secp256k1_scalar_clear(&factor);
     return ret;
 }
 
@@ -642,9 +630,7 @@ int secp256k1_ec_privkey_tweak_inv(const secp256k1_context* ctx, unsigned char *
     if (ret) {
         secp256k1_scalar_inverse(&inv, &sec);
         secp256k1_scalar_get_b32(seckey, &inv);
-        secp256k1_scalar_clear(&inv);
     }
-    secp256k1_scalar_clear(&sec);
     return ret;
 }
 
@@ -662,9 +648,7 @@ int secp256k1_ec_privkey_tweak_neg(const secp256k1_context* ctx, unsigned char *
     if (ret) {
         secp256k1_scalar_negate(&neg, &sec);
         secp256k1_scalar_get_b32(seckey, &neg);
-        secp256k1_scalar_clear(&neg);
     }
-    secp256k1_scalar_clear(&sec);
     return ret;
 }
 

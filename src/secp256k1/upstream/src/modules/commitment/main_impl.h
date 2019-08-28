@@ -101,10 +101,7 @@ int secp256k1_pedersen_commit(const secp256k1_context* ctx, secp256k1_pedersen_c
             secp256k1_pedersen_commitment_save(commit, &r);
             ret = 1;
         }
-        secp256k1_gej_clear(&rj);
-        secp256k1_ge_clear(&r);
     }
-    secp256k1_scalar_clear(&sec);
     return ret;
 }
 
@@ -136,10 +133,7 @@ int secp256k1_pedersen_blind_commit(const secp256k1_context* ctx, secp256k1_pede
             secp256k1_pedersen_commitment_save(commit, &r);
             ret = 1;
         }
-        secp256k1_gej_clear(&rj);
-        secp256k1_ge_clear(&r);
     }
-    secp256k1_scalar_clear(&sec);
     return ret;
 }
 
@@ -157,7 +151,6 @@ int secp256k1_pedersen_commitment_to_pubkey(const secp256k1_context* ctx, secp25
         secp256k1_ge_neg(&Q, &Q);
     }
     secp256k1_pubkey_save(pubkey, &Q);
-    secp256k1_ge_clear(&Q);
     return 1;
 }
 
@@ -186,8 +179,6 @@ int secp256k1_pedersen_blind_sum(const secp256k1_context* ctx, unsigned char *bl
         secp256k1_scalar_add(&acc, &acc, &x);
     }
     secp256k1_scalar_get_b32(blind_out, &acc);
-    secp256k1_scalar_clear(&acc);
-    secp256k1_scalar_clear(&x);
     return 1;
 }
 
@@ -268,24 +259,17 @@ int secp256k1_pedersen_blind_generator_blind_sum(const secp256k1_context* ctx, c
 
         secp256k1_scalar_set_b32(&tmp, generator_blind[i], &overflow);
         if (overflow == 1) {
-            secp256k1_scalar_clear(&tmp);
-            secp256k1_scalar_clear(&addend);
-            secp256k1_scalar_clear(&sum);
             return 0;
         }
         secp256k1_scalar_mul(&addend, &addend, &tmp); /* s = vr */
 
         secp256k1_scalar_set_b32(&tmp, blinding_factor[i], &overflow);
         if (overflow == 1) {
-            secp256k1_scalar_clear(&tmp);
-            secp256k1_scalar_clear(&addend);
-            secp256k1_scalar_clear(&sum);
             return 0;
         }
         secp256k1_scalar_add(&addend, &addend, &tmp); /* s = vr + r' */
         secp256k1_scalar_cond_negate(&addend, i < n_inputs);  /* s is negated if it's an input */
         secp256k1_scalar_add(&sum, &sum, &addend);    /* sum += s */
-        secp256k1_scalar_clear(&addend);
     }
 
     /* Right now tmp has the last pedersen blinding factor. Subtract the sum from it. */
@@ -293,8 +277,6 @@ int secp256k1_pedersen_blind_generator_blind_sum(const secp256k1_context* ctx, c
     secp256k1_scalar_add(&tmp, &tmp, &sum);
     secp256k1_scalar_get_b32(blinding_factor[n_total - 1], &tmp);
 
-    secp256k1_scalar_clear(&tmp);
-    secp256k1_scalar_clear(&sum);
     return 1;
 }
 
@@ -338,19 +320,14 @@ int secp256k1_blind_switch(const secp256k1_context* ctx, unsigned char* blind_sw
     secp256k1_sha256_finalize(&hasher, hashed);
     secp256k1_scalar_set_b32(&blind_switch_scalar, hashed, &overflow); /* hash(xG+vH||xJ) */
     if (overflow) {
-        secp256k1_scalar_clear(&blind_switch_scalar);
         return 0;
     }
     secp256k1_scalar_set_b32(&tmp_scalar, blind, &overflow);
     if (overflow) {
-        secp256k1_scalar_clear(&blind_switch_scalar);
-        secp256k1_scalar_clear(&tmp_scalar);
         return 0;
     }
     secp256k1_scalar_add(&blind_switch_scalar, &blind_switch_scalar, &tmp_scalar); /* x + hash(xG+vH||xJ) */
     secp256k1_scalar_get_b32(blind_switch, &blind_switch_scalar);
-    secp256k1_scalar_clear(&blind_switch_scalar);
-    secp256k1_scalar_clear(&tmp_scalar);
     return 1;
 }
 
